@@ -1,11 +1,11 @@
-// Drives the real page in Chromium. The cube library is served from a local
-// bundle so the test never needs the CDN.
+// Drives the real page in Chromium. Requests to cdn.jsdelivr.net are answered
+// from node_modules, file by file, the way the CDN serves the original package
+// files, so the test loads the same module graph the live site does.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { createServer } from "node:http";
-import { readFile, mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { readFile } from "node:fs/promises";
 import { join, extname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
@@ -15,16 +15,34 @@ const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const CDN = "https://cdn.jsdelivr.net/npm/cubing@0.66.1/twisty/+esm";
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css" };
 const title = (id) => STEPS.find((s) => s.id === id).title;
 
-let server, browser, base, bundle;
+let server, browser, base;
+
+// https://cdn.jsdelivr.net/npm/<pkg>@<version>/<path> -> node_modules/<pkg>/<path>.
+// "<pkg>@<version>/+esm" (a whole small package) is answered with an esbuild bundle of it.
+// Anything else, including "+esm" on a sub-path, is a 404 here.
+async function fromNodeModules(url) {
+  const m = new URL(url).pathname.match(/^\/npm\/((?:@[^/]+\/)?[^@/]+)@([^/]+)\/(.*)$/);
+  if (!m) return null;
+  const [, pkg, version, path] = m;
+  const pkgDir = join(ROOT, "node_modules", pkg);
+  const installed = JSON.parse(await readFile(join(pkgDir, "package.json"), "utf8")).version;
+  if (installed !== version) return null;
+  if (path === "+esm") {
+    const result = await build({ entryPoints: [pkg], bundle: true, format: "esm", write: false, absWorkingDir: ROOT, logLevel: "silent" });
+    return result.outputFiles[0].contents;
+  }
+  if (path.includes("+esm")) return null;
+  try {
+    return await readFile(join(pkgDir, normalize(path)));
+  } catch {
+    return null;
+  }
+}
 
 before(async () => {
-  const outfile = join(await mkdtemp(join(tmpdir(), "cube-")), "twisty.js");
-  await build({ entryPoints: ["cubing/twisty"], bundle: true, format: "esm", outfile, logLevel: "silent" });
-  bundle = await readFile(outfile);
   server = createServer(async (req, res) => {
     const path = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname));
     try {
@@ -51,9 +69,13 @@ async function open({ blockCdn = false, width = 1000, cdnDelay = 0 } = {}) {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-  await page.route(CDN, async (route) => {
+  await page.route("https://cdn.jsdelivr.net/**", async (route) => {
     if (cdnDelay) await new Promise((r) => setTimeout(r, cdnDelay));
-    return blockCdn ? route.abort() : route.fulfill({ body: bundle, contentType: "text/javascript" });
+    if (blockCdn) return route.abort();
+    const body = await fromNodeModules(route.request().url());
+    return body
+      ? route.fulfill({ body: Buffer.from(body), contentType: "text/javascript" })
+      : route.fulfill({ status: 404, body: "not found" });
   });
   await page.goto(base, { waitUntil: cdnDelay ? "commit" : "load" });
   return { page, errors };
@@ -163,6 +185,19 @@ test("page: a new step starts at its case even after the last one was played to 
   await page.click("#choices button:has-text('One')");
   const info = await page.evaluate(() => document.getElementById("cube").experimentalModel.detailedTimelineInfo.get());
   assert.equal(info.atStart, true);
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test("page: the 3D cube draws without errors", async () => {
+  // The player's canvas is in a closed shadow root, so wait for its lazily
+  // loaded 3D code instead: that is where a duplicate-library crash shows up.
+  const { page, errors } = await open();
+  const loaded3d = page.waitForResponse(/twisty-dynamic-3d/, { timeout: 10000 });
+  await page.click("#next");
+  await page.click("#choices button:has-text('White faces right')");
+  await loaded3d;
+  await page.waitForTimeout(1500);
   assert.deepEqual(errors, []);
   await page.close();
 });

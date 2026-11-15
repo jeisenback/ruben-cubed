@@ -5,8 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>2x2 Beginner Method</title>
   <link rel="stylesheet" href="src/style.css">
+  <!--
+    The cube library is loaded as its original package files, not the CDN's "+esm"
+    repackaging: that repackaging gives the lazily loaded 3D code its own copy of
+    shared code, which crashes the player. The import map tells the browser where
+    the packages those files import live. Versions are pinned to match package.json.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "cubing/alg": "https://cdn.jsdelivr.net/npm/cubing@0.66.1/dist/lib/cubing/alg/index.js",
+        "cubing/puzzles": "https://cdn.jsdelivr.net/npm/cubing@0.66.1/dist/lib/cubing/puzzles/index.js",
+        "cubing/twisty": "https://cdn.jsdelivr.net/npm/cubing@0.66.1/dist/lib/cubing/twisty/index.js",
+        "three/": "https://cdn.jsdelivr.net/npm/three@0.170.0/",
+        "random-uint-below": "https://cdn.jsdelivr.net/npm/random-uint-below@3.3.0/+esm"
+      }
+    }
+  </script>
   <!-- Loaded separately and async so the lessons show even if the cube library is slow or fails. -->
-  <script type="module" async src="https://cdn.jsdelivr.net/npm/cubing@0.66.1/twisty/+esm"></script>
+  <script type="module" async src="https://cdn.jsdelivr.net/npm/cubing@0.66.1/dist/lib/cubing/twisty/index.js"></script>
   <script type="module" src="src/main.js"></script>
 </head>
 <body>
