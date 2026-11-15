@@ -95,13 +95,15 @@ test("page: shows first step", async () => {
 test("page: next, choice and back", async () => {
   const { page, errors } = await open();
   await page.click("#next");
-  assert.equal(await titleText(page), title("fl-intro"));
-  await page.click("#choices button:has-text('White faces up')");
-  assert.equal(await titleText(page), title("fl-up"));
+  assert.equal(await titleText(page), title("first-layer"));
+  await page.click("#next");
+  assert.equal(await titleText(page), title("oll-intro"));
+  await page.click("#choices button:has-text('One')");
+  assert.equal(await titleText(page), title("oll-one"));
   await page.click("#back");
-  assert.equal(await titleText(page), title("fl-intro"));
+  assert.equal(await titleText(page), title("oll-intro"));
   await page.click("#back");
-  assert.equal(await titleText(page), title("notation"));
+  assert.equal(await titleText(page), title("first-layer"));
   assert.deepEqual(errors, []);
   await page.close();
 });
@@ -138,10 +140,11 @@ test("page: works with cube library blocked", async () => {
   const { page } = await open({ blockCdn: true });
   assert.equal(await titleText(page), title("notation"));
   await page.click("#next");
-  await page.click("#choices button:has-text('White faces right')");
-  assert.equal(await titleText(page), title("fl-right"));
+  await page.click("#next");
+  await page.click("#choices button:has-text('None')");
+  assert.equal(await titleText(page), title("oll-none"));
   await page.click("#back");
-  assert.equal(await titleText(page), title("fl-intro"));
+  assert.equal(await titleText(page), title("oll-intro"));
   await page.close();
 });
 
@@ -177,7 +180,6 @@ test("page: a new step starts at its case even after the last one was played to 
   const { page, errors } = await open();
   await page.waitForFunction(() => customElements.get("twisty-player"));
   await page.click("#next");
-  await page.click("#choices button:has-text('White faces right')");
   await page.evaluate(() => document.getElementById("cube").jumpToEnd());
   const atEnd = await page.evaluate(() => document.getElementById("cube").experimentalModel.detailedTimelineInfo.get());
   assert.equal(atEnd.atEnd, true, "precondition: played to the end");
@@ -195,7 +197,6 @@ test("page: the 3D cube draws without errors", async () => {
   const { page, errors } = await open();
   const loaded3d = page.waitForResponse(/twisty-dynamic-3d/, { timeout: 10000 });
   await page.click("#next");
-  await page.click("#choices button:has-text('White faces right')");
   await loaded3d;
   await page.waitForTimeout(1500);
   assert.deepEqual(errors, []);

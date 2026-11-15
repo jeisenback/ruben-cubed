@@ -8,6 +8,8 @@ import { STEPS, START } from "../src/steps.js";
 const kpuzzle = await puzzles["2x2x2"].kpuzzle();
 const byId = Object.fromEntries(STEPS.map((s) => [s.id, s]));
 const SUNE = "R U R' U R U2 R'";
+const TRIGGER = "R U R' U'";
+const TRIGGER_X3 = [TRIGGER, TRIGGER, TRIGGER].join(" ");
 
 // Corner positions: 0-3 = UFR, URB, UBL, ULF; 4-7 = DRF, DFL, DLB, DBR.
 function caseCorners(step) {
@@ -60,21 +62,30 @@ test("steps: algs parse and use only R U F", () => {
 });
 
 test("steps: every case leaves the bottom layer alone except first-layer and notation", () => {
-  for (const s of STEPS.filter((s) => !s.id.startsWith("fl-") && s.id !== "notation")) {
+  for (const s of STEPS.filter((s) => s.id !== "first-layer" && s.id !== "notation")) {
     assert.ok(bottomSolved(caseCorners(s)), s.id);
   }
 });
 
-test("steps: first-layer cases put the DRF corner above its slot", () => {
-  const branches = ["fl-right", "fl-front", "fl-up"].map((id) => byId[id]);
-  const orientations = branches.map((s) => {
-    const c = caseCorners(s);
-    assert.equal(c.pieces[0], 4, `${s.id}: DRF piece at UFR`);
-    for (const i of [5, 6, 7]) assert.ok(c.pieces[i] === i && c.orientation[i] === 0, `${s.id}: D ${i}`);
-    return c.orientation[0];
-  });
-  assert.equal(new Set(orientations).size, 3, "three different orientations");
-  assert.equal(caseCorners(byId["fl-up"]).orientation[0], 0, "fl-up: white facing up");
+test("steps: first layer is one step: repeat the trigger until the corner fits", () => {
+  const step = byId["first-layer"];
+  assert.equal(step.choices, undefined, "no branching");
+  assert.equal(step.next, "oll-intro");
+  assert.equal(step.alg, TRIGGER_X3, "example: white facing up, trigger three times");
+  const shown = caseCorners(step);
+  assert.equal(shown.pieces[0], 4, "example corner sits above its spot (front right)");
+  // Whichever way the white sticker faces, repeating the trigger fits the corner
+  // within 5 tries, and the rest of the bottom layer is intact when it does.
+  for (const k of [1, 3, 5]) {
+    let p = kpuzzle.defaultPattern().applyAlg(new Alg(Array(k).fill(TRIGGER).join(" ")).invert());
+    let tries = 0;
+    while (!(p.patternData.CORNERS.pieces[4] === 4 && p.patternData.CORNERS.orientation[4] === 0)) {
+      p = p.applyAlg(TRIGGER);
+      tries++;
+      assert.ok(tries <= 5, `k=${k}: fits within 5 tries`);
+    }
+    assert.ok(bottomSolved(p.patternData.CORNERS), `k=${k}: bottom layer intact when it fits`);
+  }
 });
 
 test("steps: oll cases", () => {
@@ -99,7 +110,7 @@ test("steps: pll cases", () => {
 });
 
 test("steps: playing every alg from its case ends where claimed", () => {
-  for (const id of ["oll-one", "pll-lights", "finish", "fl-right", "fl-front", "fl-up"]) {
+  for (const id of ["oll-one", "pll-lights", "finish", "first-layer"]) {
     assert.ok(isSolved(afterAlgCorners(byId[id])), `${id} ends solved`);
   }
   assert.equal(topOrientedCount(afterAlgCorners(byId["oll-none"])), 1, "oll-none leads to one-up");

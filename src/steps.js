@@ -23,49 +23,19 @@ export const STEPS = [
       "Play the moves and watch each face turn.",
     alg: "R R' U U' F F' R2 U2",
     setup: "U2' R2'",
-    next: "fl-intro",
+    next: "first-layer",
   },
   {
-    id: "fl-intro",
+    id: "first-layer",
     lesson: "First layer",
-    title: "Build the first layer",
+    title: "Build the white layer",
     text:
-      "Pick a color for the bottom (here, white) and get all four white corners on the bottom so " +
-      "their side colors match. The first two or three are usually easy to do by feel. " +
-      "If a white corner is stuck in the bottom layer in the wrong spot or turned the wrong way, hold it at the " +
-      "bottom front right and do R U R' U' once to lift it into the top layer. " +
-      "Then turn the top layer to bring the corner directly above where it belongs, " +
-      "hold the cube so that spot is at the front right, and repeat the move sequence R U R' U' " +
-      "until the corner drops in. How many times depends on which way its white sticker faces. " +
-      "Which way does the white sticker face?",
-    alg: "",
-    choices: [
-      { label: "White faces right", to: "fl-right" },
-      { label: "White faces front", to: "fl-front" },
-      { label: "White faces up", to: "fl-up" },
-    ],
-  },
-  {
-    id: "fl-right",
-    lesson: "First layer",
-    title: "White sticker faces right",
-    text: "Do R U R' U' once. The corner drops into place with white on the bottom.",
-    alg: repeat(TRIGGER, 1),
-    next: "oll-intro",
-  },
-  {
-    id: "fl-front",
-    lesson: "First layer",
-    title: "White sticker faces front",
-    text: "Do R U R' U' five times. Keep the cube still and just repeat it.",
-    alg: repeat(TRIGGER, 5),
-    next: "oll-intro",
-  },
-  {
-    id: "fl-up",
-    lesson: "First layer",
-    title: "White sticker faces up",
-    text: "Do R U R' U' three times.",
+      "Do this for each of the four white corners. Turn the top layer until a white corner sits directly " +
+      "above the spot where it belongs. Hold the cube so that spot is at the front right, with white on the bottom. " +
+      "Repeat R U R' U' until the corner drops in with white on the bottom and its side colors matching. " +
+      "It takes at most five tries. " +
+      "If a white corner is stuck in the bottom layer in the wrong spot, hold it at the bottom front right " +
+      "and do R U R' U' once to lift it into the top layer.",
     alg: repeat(TRIGGER, 3),
     next: "oll-intro",
   },
