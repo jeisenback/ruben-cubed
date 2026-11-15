@@ -45,17 +45,17 @@ after(async () => {
   server?.close();
 });
 
-async function open({ blockCdn = false, width = 1000 } = {}) {
+async function open({ blockCdn = false, width = 1000, cdnDelay = 0 } = {}) {
   const page = await browser.newPage({ viewport: { width, height: 800 } });
   page.setDefaultTimeout(5000);
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-  await page.route(CDN, (route) =>
-    blockCdn ? route.abort() : route.fulfill({ body: bundle, contentType: "text/javascript" }),
-  );
-  await page.goto(base);
-  await page.waitForSelector("#step-title");
+  await page.route(CDN, async (route) => {
+    if (cdnDelay) await new Promise((r) => setTimeout(r, cdnDelay));
+    return blockCdn ? route.abort() : route.fulfill({ body: bundle, contentType: "text/javascript" });
+  });
+  await page.goto(base, { waitUntil: cdnDelay ? "commit" : "load" });
   return { page, errors };
 }
 
@@ -140,6 +140,29 @@ test("page: no horizontal scroll at 375px", async () => {
       await page.click("#back");
     }
   }
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test("page: lessons show while the cube library is still loading", async () => {
+  const { page } = await open({ cdnDelay: 4000 });
+  await page.waitForFunction(() => document.getElementById("step-title").textContent !== "", null, { timeout: 2000 });
+  assert.equal(await titleText(page), title("notation"));
+  await page.close();
+});
+
+test("page: a new step starts at its case even after the last one was played to the end", async () => {
+  const { page, errors } = await open();
+  await page.waitForFunction(() => customElements.get("twisty-player"));
+  await page.click("#next");
+  await page.click("#choices button:has-text('White faces right')");
+  await page.evaluate(() => document.getElementById("cube").jumpToEnd());
+  const atEnd = await page.evaluate(() => document.getElementById("cube").experimentalModel.detailedTimelineInfo.get());
+  assert.equal(atEnd.atEnd, true, "precondition: played to the end");
+  await page.click("#next");
+  await page.click("#choices button:has-text('One')");
+  const info = await page.evaluate(() => document.getElementById("cube").experimentalModel.detailedTimelineInfo.get());
+  assert.equal(info.atStart, true);
   assert.deepEqual(errors, []);
   await page.close();
 });

@@ -53,6 +53,11 @@ function render() {
   cube.setAttribute("experimental-setup-alg", step.setup ? `x2 ${step.setup}` : "x2");
   cube.setAttribute("experimental-setup-anchor", step.setup ? "start" : "end");
   cube.setAttribute("alg", step.alg);
+  // Start every step at its case, even if the last step was played to the end.
+  if (customElements.get("twisty-player")) {
+    cube.pause();
+    cube.timestamp = "start";
+  }
 }
 
 render();

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Alg } from "cubing/alg";
 import { puzzles } from "cubing/puzzles";
+import { KPattern } from "cubing/kpuzzle";
 import { STEPS, START } from "../src/steps.js";
 
 const kpuzzle = await puzzles["2x2x2"].kpuzzle();
@@ -102,4 +103,34 @@ test("steps: playing every alg from its case ends where claimed", () => {
     assert.ok(isSolved(afterAlgCorners(byId[id])), `${id} ends solved`);
   }
   assert.equal(topOrientedCount(afterAlgCorners(byId["oll-none"])), 1, "oll-none leads to one-up");
+});
+
+// Every top-orientation pattern with 0 or 2 yellow-on-top corners.
+function topOrientations(count) {
+  const out = [];
+  for (let n = 0; n < 81; n++) {
+    const o = [n % 3, Math.floor(n / 3) % 3, Math.floor(n / 9) % 3, Math.floor(n / 27) % 3];
+    if (o.reduce((a, b) => a + b, 0) % 3 === 0 && o.filter((x) => x === 0).length === count) out.push(o);
+  }
+  return out;
+}
+
+test("steps: oll none/two hold rule always leads to one yellow corner", () => {
+  // none: hold so front-left corner (ULF, position 3) has orientation 2; two: orientation 1.
+  for (const [count, want, id] of [[0, 2, "oll-none"], [2, 1, "oll-two"]]) {
+    assert.equal(caseCorners(byId[id]).orientation[3], want, `${id} case is shown at the rule's angle`);
+    for (const o of topOrientations(count)) {
+      const start = new KPattern(kpuzzle, {
+        CORNERS: { pieces: [0, 1, 2, 3, 4, 5, 6, 7], orientation: [...o, 0, 0, 0, 0] },
+      });
+      const angles = ["", "U", "U2", "U'"].map((u) => start.applyAlg(u)).filter((p) => p.patternData.CORNERS.orientation[3] === want);
+      assert.ok(angles.length > 0, `${id}: rule applies to ${o}`);
+      for (const p of angles) assert.equal(topOrientedCount(p.applyAlg(SUNE).patternData.CORNERS), 1, `${id}: ${o}`);
+    }
+  }
+});
+
+test("steps: skip choices exist", () => {
+  assert.ok(byId["oll-intro"].choices.some((c) => c.to === "pll-intro"), "all four yellow -> top corners");
+  assert.ok(byId["pll-intro"].choices.some((c) => c.to === "finish"), "all sides match -> finish");
 });

@@ -32,7 +32,9 @@ export const STEPS = [
     text:
       "Pick a color for the bottom (here, white) and get all four white corners on the bottom so " +
       "their side colors match. The first two or three are usually easy to do by feel. " +
-      "For a stuck corner, put it in the top layer directly above where it belongs (front right), " +
+      "If a white corner is stuck in the bottom layer in the wrong spot or turned the wrong way, hold it at the " +
+      "bottom front right and do R U R' U' once to lift it into the top layer. " +
+      "Then turn the top layer to bring the corner directly above where it belongs, " +
       "hold the cube so that spot is at the front right, and repeat the move sequence R U R' U' " +
       "until the corner drops in. How many times depends on which way its white sticker faces. " +
       "Which way does the white sticker face?",
@@ -80,6 +82,7 @@ export const STEPS = [
       { label: "One", to: "oll-one" },
       { label: "None", to: "oll-none" },
       { label: "Two", to: "oll-two" },
+      { label: "All four", to: "pll-intro" },
     ],
   },
   {
@@ -97,8 +100,8 @@ export const STEPS = [
     lesson: "Top color",
     title: "No yellow corners on top",
     text:
-      "Do Sune once. This will give you a different case, usually one yellow corner on top. " +
-      "Then look again.",
+      "Turn the top layer until the front-left top corner has its yellow sticker facing left. " +
+      "Then do Sune once. You will now have one yellow corner on top. Look again.",
     alg: SUNE,
     setup: `${SUNE_BACKWARDS} ${SUNE_BACKWARDS}`,
     next: "oll-intro",
@@ -107,7 +110,9 @@ export const STEPS = [
     id: "oll-two",
     lesson: "Top color",
     title: "Two yellow corners on top",
-    text: "Do Sune once from any angle. This gives you a different case. Then look again.",
+    text:
+      "Turn the top layer until the front-left top corner has its yellow sticker facing you (the front). " +
+      "Then do Sune once. You will now have one yellow corner on top. Look again.",
     alg: SUNE,
     setup: "R U R' U' R' F R F'",
     next: "oll-intro",
@@ -124,6 +129,7 @@ export const STEPS = [
     choices: [
       { label: "Yes, headlights", to: "pll-lights" },
       { label: "No headlights", to: "pll-none" },
+      { label: "Every side already matches", to: "finish" },
     ],
   },
   {
