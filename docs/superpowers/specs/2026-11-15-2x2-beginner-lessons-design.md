@@ -36,21 +36,39 @@ a content change rather than new rendering code.
 - One static `index.html` (plus a small JS and CSS file if useful), opened
   directly in a browser or served from any static host.
 - cubing.js loaded from a CDN, pinned to an exact version.
-- Lessons defined as a plain data list (title, explanation, setup moves,
-  algorithm), so adding a lesson or a puzzle is editing data.
+- Lessons are made of **steps**. A step has a title, a short explanation and
+  an algorithm, plus either one `next` step or a list of **choices**
+  ("Which of these does your cube look like?"), each pointing to another
+  step. This is how branching works: the learner picks the case they see and
+  is taken to the step for that case. A branch can point back to an earlier
+  step ("look again").
+- Steps live in a plain data list keyed by id, so adding a step, a branch or
+  a puzzle is editing data.
 - Each lesson shows the case by using the inverse of the algorithm as the
   setup (cubing.js `experimental-setup-anchor="end"`), so playing the
   algorithm ends with the lesson's goal achieved.
-- Simple navigation: a list of lessons and next / previous buttons.
+- Navigation: a list of lessons to jump to, a Next button (or the choice
+  buttons on a branching step) and a Back button. Back retraces the path the
+  learner actually took, including the branches they picked, all the way to
+  the start.
+- Within a step, the cube's built-in controls step forward and backward one
+  move at a time.
 
 ## Lesson content (my call - correct if you teach it differently)
 0. **Notation** - what R, U, F, R', U2 mean, each shown on the cube.
-1. **First layer** - intuitive; teach the corner-insert trigger `R U R' U'`
-   with one or two example cases.
+1. **First layer** - intuitive; teach the corner-insert trigger `R U R' U'`.
+   Branch on which way the white sticker faces on the corner above its spot
+   (right / front / up); each branch shows how many times to repeat the
+   trigger.
 2. **Orient the last layer** - make the top all one color with Sune:
-   `R U R' U R U2 R'` (repeat as needed).
-3. **Permute the last layer** - swap corners into place:
-   `R U R' U' R' F R2 U' R' U' R U R' F'` (place the solved pair at the back).
+   `R U R' U R U2 R'`. Branch on how many top corners already show yellow
+   on top: one (hold it front-left, Sune solves it), none or two (Sune once,
+   then back to "look again").
+3. **Permute the last layer** - `R U R' U' R' F R2 U' R' U' R U R' F'`.
+   Branch on "headlights" (a side whose two top corners match): if yes, hold
+   them at the back and do the algorithm; if no, do it once from any angle,
+   then back to "look again".
+4. **Finish** - turn the top layer until the cube is solved.
 
 ## Left to the builder
 - Exact cubing.js version and layout/styling details.
