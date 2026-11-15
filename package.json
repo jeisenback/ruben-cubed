@@ -1,0 +1,12 @@
+{
+  "name": "ruben-cubed",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "cubing": "0.66.1",
+    "esbuild": "0.28.2"
+  }
+}
