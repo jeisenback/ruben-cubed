@@ -54,20 +54,19 @@ a content change rather than new rendering code.
 - Within a step, the cube's built-in controls step forward and backward one
   move at a time.
 
-## Lesson content (my call - correct if you teach it differently)
-0. **Notation** - what R, U, F, R', U2 mean, each shown on the cube.
-1. **First layer** - intuitive; teach the corner-insert trigger `R U R' U'`.
-   Branch on which way the white sticker faces on the corner above its spot
-   (right / front / up); each branch shows how many times to repeat the
-   trigger.
-2. **Orient the last layer** - make the top all one color with Sune:
-   `R U R' U R U2 R'`. Branch on how many top corners already show yellow
-   on top: one (hold it front-left, Sune solves it), none or two (Sune once,
-   then back to "look again").
-3. **Permute the last layer** - `R U R' U' R' F R2 U' R' U' R U R' F'`.
-   Branch on "headlights" (a side whose two top corners match): if yes, hold
-   them at the back and do the algorithm; if no, do it once from any angle,
-   then back to "look again".
+## Lesson content (revised: fewest algorithms)
+The owner asked to prioritize fewer algorithms; anything else is more advanced.
+The method uses two: the trigger `R U R' U'` and one corner swap.
+0. **Notation** - what R, U, F, D, R', U2 mean, each shown on the cube.
+1. **First layer** - one step: put a white corner above its spot, repeat
+   `R U R' U'` until it fits (at most five times).
+2. **Yellow side** - a variation of the first layer: cube upside down (white
+   on top), repeat `R U R' U'` on the bottom front right corner until its
+   yellow faces down (two or four times), turn only the bottom layer to bring
+   the next corner there, repeat. The white layer restores itself.
+3. **Top corners** - `R U R' U' R' F R2 U' R' U' R U R' F'`. Branch on
+   headlights: hold them on the left; with none, do it once and look again;
+   if every side matches, skip to Finish.
 4. **Finish** - turn the top layer until the cube is solved.
 
 ## Left to the builder

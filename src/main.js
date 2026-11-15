@@ -47,10 +47,12 @@ function render() {
 
   const cube = $("cube");
   cube.hidden = !step.alg;
-  // x2 holds the cube upside down so white is on the bottom and yellow on top.
+  // The player's default colors have white on top. x2 flips the cube so white is on
+  // the bottom; steps marked upsideDown keep white on top.
   // Without a setup, the case is "the cube just before the algorithm" (anchor end).
   // Attributes are set, never removed: the player errors on removed attributes.
-  cube.setAttribute("experimental-setup-alg", step.setup ? `x2 ${step.setup}` : "x2");
+  const hold = step.upsideDown ? "" : "x2";
+  cube.setAttribute("experimental-setup-alg", [hold, step.setup].filter(Boolean).join(" "));
   cube.setAttribute("experimental-setup-anchor", step.setup ? "start" : "end");
   cube.setAttribute("alg", step.alg);
   // Start every step at its case, even if the last step was played to the end.

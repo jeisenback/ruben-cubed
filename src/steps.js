@@ -3,8 +3,6 @@
 // If `setup` is missing, the case is "the cube just before `alg`".
 // A step has `next` (one way forward) or `choices` (the learner picks a case).
 
-const SUNE = "R U R' U R U2 R'";
-const SUNE_BACKWARDS = "R U2' R' U' R U' R'";
 const SWAP = "R U R' U' R' F R2 U' R' U' R U R' F'";
 const TRIGGER = "R U R' U'";
 const repeat = (alg, n) => Array(n).fill(alg).join(" ");
@@ -18,10 +16,10 @@ export const STEPS = [
     title: "How to read moves",
     text:
       "Each letter is a quarter turn of one face, as if you were looking straight at that face. " +
-      "R turns the right face, U the top (up) face, F the front face, all clockwise. " +
+      "R turns the right face, U the top (up) face, F the front face, D the bottom (down) face, all clockwise. " +
       "A ' (say \"prime\") means turn the other way. A 2 means turn it twice. " +
       "Play the moves and watch each face turn.",
-    alg: "R R' U U' F F' R2 U2",
+    alg: "R R' U U' F F' D D' R2 U2",
     setup: "U2' R2'",
     next: "first-layer",
   },
@@ -37,61 +35,31 @@ export const STEPS = [
       "If a white corner is stuck in the bottom layer in the wrong spot, hold it at the bottom front right " +
       "and do R U R' U' once to lift it into the top layer.",
     alg: repeat(TRIGGER, 3),
-    next: "oll-intro",
+    next: "yellow-side",
   },
   {
-    id: "oll-intro",
-    lesson: "Top color",
-    title: "Make the top all yellow",
+    id: "yellow-side",
+    lesson: "Yellow side",
+    upsideDown: true,
+    title: "Turn the yellow stickers down",
     text:
-      "Turn the cube over so the solved white layer is on the bottom. Now you only need one move " +
-      "sequence, called Sune: R U R' U R U2 R'. Count the top corners that already show yellow on top. " +
-      "How many are there?",
-    alg: "",
-    choices: [
-      { label: "One", to: "oll-one" },
-      { label: "None", to: "oll-none" },
-      { label: "Two", to: "oll-two" },
-      { label: "All four", to: "pll-intro" },
-    ],
-  },
-  {
-    id: "oll-one",
-    lesson: "Top color",
-    title: "One yellow corner on top",
-    text:
-      "Turn the top layer until the yellow-on-top corner is at the front left. Then do Sune once. " +
-      "If the top still is not all yellow, look again and repeat.",
-    alg: SUNE,
+      "This uses the same move as the white layer. Turn the cube over so white is on top and yellow is on the bottom. " +
+      "Look at the bottom front right corner. If its yellow sticker does not face down, repeat R U R' U' " +
+      "until that same corner is back in its spot with yellow facing down (two or four times). " +
+      "In between, the corner leaves its spot and a white corner may show up there: keep going. " +
+      "The white layer will look messed up while you do this. That is expected. " +
+      "Then turn only the bottom layer (D) to bring the next corner whose yellow does not face down to the bottom front right, " +
+      "and repeat. Never turn the whole cube during this step. " +
+      "When all four yellow stickers face down, the white layer fixes itself. If all four already face down, go to the next step.",
+    alg: `${repeat(TRIGGER, 2)} D ${repeat(TRIGGER, 4)} D'`,
     next: "pll-intro",
-  },
-  {
-    id: "oll-none",
-    lesson: "Top color",
-    title: "No yellow corners on top",
-    text:
-      "Turn the top layer until the front-left top corner has its yellow sticker facing left. " +
-      "Then do Sune once. You will now have one yellow corner on top. Look again.",
-    alg: SUNE,
-    setup: `${SUNE_BACKWARDS} ${SUNE_BACKWARDS}`,
-    next: "oll-intro",
-  },
-  {
-    id: "oll-two",
-    lesson: "Top color",
-    title: "Two yellow corners on top",
-    text:
-      "Turn the top layer until the front-left top corner has its yellow sticker facing you (the front). " +
-      "Then do Sune once. You will now have one yellow corner on top. Look again.",
-    alg: SUNE,
-    setup: "R U R' U' R' F R F'",
-    next: "oll-intro",
   },
   {
     id: "pll-intro",
     lesson: "Top corners",
     title: "Put the top corners in place",
     text:
+      "Turn the cube back over so white is on the bottom and yellow is on top. " +
       "The top is all yellow, but the corners may be in the wrong spots. Look at the sides of the top layer. " +
       "If one side has two corners with matching colors, those are called headlights. " +
       "Do you see headlights?",
